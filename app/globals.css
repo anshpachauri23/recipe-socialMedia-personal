@@ -1,0 +1,199 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+body {
+  color: #2d2d2d;
+  background: linear-gradient(135deg, #f7f5f0 0%, #ede8dd 100%);
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c4b693;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b19f6e;
+}
+
+/* Custom components */
+.btn-primary {
+  @apply bg-earth-600 hover:bg-earth-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+}
+
+.btn-secondary {
+  @apply bg-sage-500 hover:bg-sage-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+}
+
+.btn-outline {
+  @apply border-2 border-earth-600 text-earth-600 hover:bg-earth-600 hover:text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+}
+
+.input-field {
+  @apply w-full px-3 py-2 border border-earth-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-earth-500 focus:border-transparent;
+}
+
+.card {
+  @apply bg-white rounded-xl shadow-sm border border-earth-200 p-6;
+}
+
+.post-card {
+  @apply bg-white rounded-2xl shadow-sm border border-earth-200 overflow-hidden;
+}
+
+.avatar {
+  @apply w-10 h-10 rounded-full object-cover;
+}
+
+.avatar-lg {
+  @apply w-16 h-16 rounded-full object-cover;
+}
+
+.avatar-xl {
+  @apply w-24 h-24 rounded-full object-cover;
+}
+
+/* Instagram-like post styling */
+.post-image {
+  @apply w-full h-auto object-cover;
+}
+
+.post-actions {
+  @apply flex items-center justify-between px-4 py-3 border-t border-earth-100;
+}
+
+.action-btn {
+  @apply flex items-center space-x-2 text-earth-600 hover:text-earth-700 transition-colors duration-200;
+}
+
+.like-btn.liked {
+  @apply text-terracotta-500;
+}
+
+/* Loading animation */
+.loading-spinner {
+  @apply animate-spin rounded-full h-6 w-6 border-b-2 border-earth-600;
+}
+
+/* Responsive grid */
+.posts-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+/* Search bar */
+.search-bar {
+  @apply w-full max-w-md mx-auto relative;
+}
+
+.search-input {
+  @apply w-full pl-10 pr-4 py-2 border border-earth-300 rounded-full focus:outline-none focus:ring-2 focus:ring-earth-500 focus:border-transparent;
+}
+
+.search-icon {
+  @apply absolute left-3 top-1/2 transform -translate-y-1/2 text-earth-400;
+}
+
+/* Navigation */
+.nav-link {
+  @apply flex items-center space-x-2 px-3 py-2 rounded-lg text-earth-600 hover:bg-earth-50 transition-colors duration-200;
+}
+
+.nav-link.active {
+  @apply bg-earth-100 text-earth-800;
+}
+
+/* Modal */
+.modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+}
+
+.modal-content {
+  @apply bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto;
+}
+
+/* Form styling */
+.form-group {
+  @apply mb-4;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-earth-700 mb-2;
+}
+
+.form-error {
+  @apply text-sm text-red-600 mt-1;
+}
+
+/* Image upload */
+.image-upload {
+  @apply border-2 border-dashed border-earth-300 rounded-lg p-6 text-center hover:border-earth-400 transition-colors duration-200;
+}
+
+.image-upload.dragover {
+  @apply border-earth-500 bg-earth-50;
+}
+
+/* Step by step recipe */
+.recipe-step {
+  @apply mb-6 p-4 bg-earth-50 rounded-lg;
+}
+
+.step-number {
+  @apply inline-flex items-center justify-center w-8 h-8 bg-earth-600 text-white rounded-full text-sm font-medium mb-2;
+}
+
+/* Comments */
+.comment {
+  @apply flex space-x-3 p-3 border-b border-earth-100 last:border-b-0;
+}
+
+.comment-avatar {
+  @apply w-8 h-8 rounded-full object-cover flex-shrink-0;
+}
+
+.comment-content {
+  @apply flex-1;
+}
+
+.comment-author {
+  @apply font-medium text-earth-800 text-sm;
+}
+
+.comment-text {
+  @apply text-earth-600 text-sm mt-1;
+}
+
+.comment-time {
+  @apply text-earth-400 text-xs mt-1;
+}
