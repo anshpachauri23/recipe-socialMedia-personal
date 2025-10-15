@@ -61,6 +61,8 @@ export default function FeedPage() {
 
   const handleLike = async (postId: number) => {
     try {
+      if (!posts) return
+      
       const post = posts.find(p => p.id === postId)
       if (!post) return
 
@@ -117,7 +119,7 @@ export default function FeedPage() {
               Try Again
             </button>
           </div>
-        ) : posts.length === 0 ? (
+        ) : !posts || posts.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl text-earth-300 mb-4">🍳</div>
             <h3 className="text-lg font-medium text-earth-800 mb-2">No posts yet</h3>
@@ -130,7 +132,7 @@ export default function FeedPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {posts.map((post) => (
+            {posts && posts.map((post) => (
               <PostCard
                 key={post.id}
                 post={post}

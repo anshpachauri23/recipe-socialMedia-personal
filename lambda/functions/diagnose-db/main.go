@@ -63,9 +63,10 @@ func extractUserIDFromToken(authHeader string) (int, error) {
 		return 0, fmt.Errorf("no authorization header")
 	}
 
-	// Extract token from "Bearer <token>"
-	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-	if tokenString == authHeader {
+	// Extract token from "Bearer <token>" (handle leading/trailing spaces)
+	tokenString := strings.TrimSpace(authHeader)
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	if tokenString == "" || tokenString == strings.TrimSpace(authHeader) {
 		return 0, fmt.Errorf("invalid authorization header format")
 	}
 
