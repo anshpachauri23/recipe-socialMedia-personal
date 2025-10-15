@@ -4,9 +4,6 @@ import (
 	"net/http"
 	"strings"
 
-	"recipe-social-backend/database"
-	"recipe-social-backend/models"
-
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )

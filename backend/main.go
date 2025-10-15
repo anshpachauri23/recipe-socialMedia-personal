@@ -19,11 +19,14 @@ func main() {
 	}
 
 	// Initialize database
-	db, err := database.InitDB()
+	sqlDB, err := database.InitDB()
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
-	defer db.Close()
+	defer sqlDB.Close()
+	
+	// Wrap in custom DB type
+	db := &database.DB{sqlDB}
 
 	// Initialize Gin router
 	r := gin.Default()

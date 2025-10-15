@@ -82,7 +82,7 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		log.Printf("Database connection error: %v", err)
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
-			Body:       `{"error": "Database connection failed"}`,
+			Body:       fmt.Sprintf(`{"error": "Database connection failed: %s"}`, err.Error()),
 			Headers: map[string]string{
 				"Content-Type": "application/json",
 				"Access-Control-Allow-Origin": "*",
@@ -118,14 +118,28 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 	}
 
 	// Generate JWT token
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Printf("JWT_SECRET environment variable is not set")
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+			Body:       `{"error": "JWT secret not configured"}`,
+			Headers: map[string]string{
+				"Content-Type": "application/json",
+				"Access-Control-Allow-Origin": "*",
+			},
+		}, nil
+	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id":  user.ID,
 		"username":  user.Username,
 		"exp":       time.Now().Add(time.Hour * 24 * 7).Unix(), // 7 days
 	})
 
-	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	tokenString, err := token.SignedString([]byte(jwtSecret))
 	if err != nil {
+		log.Printf("JWT token generation error: %v", err)
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
 			Body:       `{"error": "Failed to generate token"}`,
@@ -175,6 +189,14 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 }
 
 func connectToDatabase() (*sql.DB, error) {
+	// Validate required environment variables
+	requiredEnvVars := []string{"DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME"}
+	for _, envVar := range requiredEnvVars {
+		if os.Getenv(envVar) == "" {
+			return nil, fmt.Errorf("missing required environment variable: %s", envVar)
+		}
+	}
+
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=require",
 		os.Getenv("DB_HOST"),
 		os.Getenv("DB_PORT"),
@@ -182,7 +204,17 @@ func connectToDatabase() (*sql.DB, error) {
 		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_NAME"))
 
-	return sql.Open("postgres", connStr)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database connection: %v", err)
+	}
+
+	// Test the connection
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %v", err)
+	}
+
+	return db, nil
 }
 
 func getUserByEmail(db *sql.DB, email string) (*User, error) {

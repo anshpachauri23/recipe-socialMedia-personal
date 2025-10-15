@@ -225,21 +225,31 @@ func extractUserIDFromToken(authHeader string) (int, error) {
 		return 0, fmt.Errorf("no authorization header")
 	}
 
-	// Remove "Bearer " prefix
-	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-	if tokenString == authHeader {
+	// Remove "Bearer " prefix (handle leading/trailing spaces)
+	tokenString := strings.TrimSpace(authHeader)
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	if tokenString == "" || tokenString == strings.TrimSpace(authHeader) {
 		return 0, fmt.Errorf("invalid authorization header format")
 	}
 
 	// Parse and validate token
+	log.Printf("Extracted token: %s", tokenString)
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Printf("JWT_SECRET environment variable is not set")
+		return 0, fmt.Errorf("JWT secret not configured")
+	}
+	log.Printf("JWT_SECRET is set (length: %d)", len(jwtSecret))
+	
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv("JWT_SECRET")), nil
+		return []byte(jwtSecret), nil
 	})
 
 	if err != nil {
+		log.Printf("JWT parsing error: %v", err)
 		return 0, err
 	}
 
@@ -265,15 +275,30 @@ func connectToDatabase() (*sql.DB, error) {
 }
 
 func uploadImageToS3(imageData, filename string) (string, error) {
+	var base64Data string
+	
+	// Check if it's a data URL format (e.g., "data:image/jpeg;base64,...")
+	if strings.Contains(imageData, ",") {
+		// Extract base64 data from data URL
+		parts := strings.SplitN(imageData, ",", 2)
+		if len(parts) != 2 {
+			return "", fmt.Errorf("invalid image data format")
+		}
+		base64Data = parts[1]
+	} else {
+		// It's already just the base64 data
+		base64Data = imageData
+	}
+
 	// Decode base64 image data
-	imageBytes, err := base64.StdEncoding.DecodeString(imageData)
+	imageBytes, err := base64.StdEncoding.DecodeString(base64Data)
 	if err != nil {
 		return "", fmt.Errorf("failed to decode base64 image: %v", err)
 	}
 
 	// Create S3 session
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(os.Getenv("AWS_REGION")),
+		Region: aws.String(os.Getenv("S3_REGION")),
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to create S3 session: %v", err)
@@ -301,7 +326,7 @@ func uploadImageToS3(imageData, filename string) (string, error) {
 	// Return public URL
 	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", 
 		os.Getenv("S3_BUCKET"), 
-		os.Getenv("AWS_REGION"), 
+		os.Getenv("S3_REGION"), 
 		key), nil
 }
 

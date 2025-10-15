@@ -300,7 +300,7 @@ func (h *PostHandler) DeleteComment(c *gin.Context) {
 		return
 	}
 	
-	userID := c.GetInt("user_id")
+	_ = c.GetInt("user_id")
 	
 	// TODO: Add authorization check to ensure user owns the comment
 	
