@@ -202,7 +202,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 **Ansh Pachauri**
 - GitHub: [@anshpachauri](https://github.com/anshpachauri)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/anshpachauri)
+- LinkedIn: [Your LinkedIn](www.linkedin.com/in/ansh-pachauri)
 
 ## 🙏 Acknowledgments
 
