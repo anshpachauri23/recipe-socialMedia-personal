@@ -16,7 +16,7 @@ func (db *DB) CreatePost(post *models.Post) error {
 		INSERT INTO posts (user_id, title, description)
 		VALUES ($1, $2, $3)
 		RETURNING id, created_at, updated_at`
-	
+
 	err = tx.QueryRow(query, post.UserID, post.Title, post.Description).
 		Scan(&post.ID, &post.CreatedAt, &post.UpdatedAt)
 	if err != nil {
@@ -29,7 +29,7 @@ func (db *DB) CreatePost(post *models.Post) error {
 			INSERT INTO post_images (post_id, image_url, step_description, step_number)
 			VALUES ($1, $2, $3, $4)
 			RETURNING id, created_at`
-		
+
 		err = tx.QueryRow(imageQuery, post.ID, image.ImageURL, image.StepDescription, image.StepNumber).
 			Scan(&image.ID, &image.CreatedAt)
 		if err != nil {
@@ -47,7 +47,7 @@ func (db *DB) GetPost(id int) (*models.Post, error) {
 			   p.created_at, p.updated_at
 		FROM posts p
 		WHERE p.id = $1`
-	
+
 	err := db.QueryRow(query, id).Scan(
 		&post.ID, &post.UserID, &post.Title, &post.Description,
 		&post.TotalLikes, &post.TotalComments, &post.CreatedAt, &post.UpdatedAt,
@@ -79,13 +79,13 @@ func (db *DB) GetPostImages(postID int) ([]models.PostImage, error) {
 		FROM post_images
 		WHERE post_id = $1
 		ORDER BY step_number`
-	
+
 	rows, err := db.Query(query, postID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	var images []models.PostImage
 	for rows.Next() {
 		var image models.PostImage
@@ -96,7 +96,7 @@ func (db *DB) GetPostImages(postID int) ([]models.PostImage, error) {
 		}
 		images = append(images, image)
 	}
-	
+
 	return images, nil
 }
 
@@ -109,16 +109,16 @@ func (db *DB) GetFeed(userID int, limit, offset int) ([]models.FeedPost, error) 
 		JOIN users u ON p.user_id = u.id
 		WHERE p.user_id IN (
 			SELECT following_id FROM follows WHERE follower_id = $1
-		) OR u.follower_count > 1000
+		) OR u.follower_count > 1000 OR p.user_id = $1
 		ORDER BY p.created_at DESC
 		LIMIT $2 OFFSET $3`
-	
+
 	rows, err := db.Query(query, userID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	var posts []models.FeedPost
 	for rows.Next() {
 		var post models.FeedPost
@@ -132,9 +132,17 @@ func (db *DB) GetFeed(userID int, limit, offset int) ([]models.FeedPost, error) 
 			return nil, err
 		}
 		post.User = user
+
+		// Fetch images for this post
+		images, err := db.GetPostImages(post.ID)
+		if err != nil {
+			return nil, err
+		}
+		post.Images = images
+
 		posts = append(posts, post)
 	}
-	
+
 	return posts, nil
 }
 
@@ -148,13 +156,13 @@ func (db *DB) SearchPosts(query string, limit, offset int) ([]models.Post, error
 		WHERE p.title ILIKE $1 OR p.description ILIKE $1
 		ORDER BY p.total_likes DESC, p.created_at DESC
 		LIMIT $2 OFFSET $3`
-	
+
 	rows, err := db.Query(searchQuery, "%"+query+"%", limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	var posts []models.Post
 	for rows.Next() {
 		var post models.Post
@@ -170,7 +178,7 @@ func (db *DB) SearchPosts(query string, limit, offset int) ([]models.Post, error
 		post.User = &user
 		posts = append(posts, post)
 	}
-	
+
 	return posts, nil
 }
 
@@ -179,7 +187,7 @@ func (db *DB) UpdatePost(post *models.Post) error {
 		UPDATE posts 
 		SET title = $1, description = $2, updated_at = CURRENT_TIMESTAMP
 		WHERE id = $3`
-	
+
 	_, err := db.Exec(query, post.Title, post.Description, post.ID)
 	return err
 }
@@ -214,7 +222,7 @@ func (db *DB) CreateComment(comment *models.Comment) error {
 		INSERT INTO comments (user_id, post_id, content)
 		VALUES ($1, $2, $3)
 		RETURNING id, created_at, updated_at`
-	
+
 	return db.QueryRow(query, comment.UserID, comment.PostID, comment.Content).
 		Scan(&comment.ID, &comment.CreatedAt, &comment.UpdatedAt)
 }
@@ -228,13 +236,13 @@ func (db *DB) GetComments(postID int, limit, offset int) ([]models.Comment, erro
 		WHERE c.post_id = $1
 		ORDER BY c.created_at DESC
 		LIMIT $2 OFFSET $3`
-	
+
 	rows, err := db.Query(query, postID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	var comments []models.Comment
 	for rows.Next() {
 		var comment models.Comment
@@ -250,7 +258,7 @@ func (db *DB) GetComments(postID int, limit, offset int) ([]models.Comment, erro
 		comment.User = &user
 		comments = append(comments, comment)
 	}
-	
+
 	return comments, nil
 }
 
@@ -258,4 +266,55 @@ func (db *DB) DeleteComment(id int) error {
 	query := `DELETE FROM comments WHERE id = $1`
 	_, err := db.Exec(query, id)
 	return err
+}
+
+func (db *DB) GetUserPosts(userID int, currentUserID int, limit, offset int) ([]models.FeedPost, error) {
+	query := `
+		SELECT p.id, p.user_id, p.title, p.description, p.total_likes, p.total_comments,
+			   p.created_at, p.updated_at,
+			   u.id, u.username, u.full_name, u.profile_photo_url, u.follower_count
+		FROM posts p
+		JOIN users u ON p.user_id = u.id
+		WHERE p.user_id = $1
+		ORDER BY p.created_at DESC
+		LIMIT $2 OFFSET $3`
+
+	rows, err := db.Query(query, userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []models.FeedPost
+	for rows.Next() {
+		var post models.FeedPost
+		var user models.User
+		err := rows.Scan(
+			&post.ID, &post.UserID, &post.Title, &post.Description,
+			&post.TotalLikes, &post.TotalComments, &post.CreatedAt, &post.UpdatedAt,
+			&user.ID, &user.Username, &user.FullName, &user.ProfilePhotoURL, &user.FollowerCount,
+		)
+		if err != nil {
+			return nil, err
+		}
+		post.User = user
+
+		// Fetch images for this post
+		images, err := db.GetPostImages(post.ID)
+		if err != nil {
+			return nil, err
+		}
+		post.Images = images
+
+		// Check if current user has liked this post
+		isLiked, err := db.IsLiked(currentUserID, post.ID)
+		if err != nil {
+			return nil, err
+		}
+		post.IsLiked = isLiked
+
+		posts = append(posts, post)
+	}
+
+	return posts, nil
 }
