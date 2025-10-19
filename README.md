@@ -1,16 +1,17 @@
-# 🍳 Recipe Social Media Platform
+# Recipe Social Media Platform
 
-A full-stack social media application for sharing and discovering recipes, built with Next.js, Go, and PostgreSQL.
+A full-stack social media application for sharing recipes, built with Next.js (React) for the frontend and Go (Gin framework) for the backend, connected to an AWS RDS PostgreSQL database and AWS S3 for image storage.
 
 ## ✨ Features
 
-- **User Authentication**: Secure login/register with JWT tokens
-- **Recipe Sharing**: Create posts with multiple images and step-by-step instructions
-- **Social Features**: Like posts, comment, follow users
-- **Profile Management**: Upload profile photos, edit bio, view user posts
-- **Real-time Feed**: Personalized feed with your posts and followed users
-- **Image Storage**: AWS S3 integration for scalable image storage
+- **User Authentication**: Secure registration and login with JWT tokens
+- **Recipe Management**: Create, view, update, and delete recipe posts
+- **Image Uploads**: Upload images to AWS S3 with automatic optimization
+- **Social Features**: Like and comment on posts, follow other users
+- **User Profiles**: Customizable profiles with photo uploads
+- **Search Functionality**: Search for recipes and users
 - **Responsive Design**: Mobile-first design with Tailwind CSS
+- **Real-time Updates**: Dynamic like counts and comment systems
 
 ## 🛠️ Tech Stack
 
@@ -18,83 +19,71 @@ A full-stack social media application for sharing and discovering recipes, built
 - **Next.js 14** - React framework with App Router
 - **TypeScript** - Type-safe JavaScript
 - **Tailwind CSS** - Utility-first CSS framework
-- **React Icons** - Beautiful icons
+- **React Icons** - Icon library
 - **Axios** - HTTP client
 - **js-cookie** - Cookie management
+- **React Hot Toast** - Notifications
 
 ### Backend
-- **Go** - High-performance backend language
-- **Gin** - HTTP web framework
-- **PostgreSQL** - Relational database
-- **AWS S3** - Object storage for images
-- **JWT** - JSON Web Tokens for authentication
+- **Go** - Programming language
+- **Gin** - Web framework
+- **PostgreSQL** - Database (AWS RDS)
+- **AWS S3** - Image storage
+- **JWT** - Authentication
 
-### Database
-- **PostgreSQL** - Primary database
-- **AWS RDS** - Managed PostgreSQL service
+### Infrastructure
+- **AWS RDS** - Managed PostgreSQL database
+- **AWS S3** - Object storage for images
+- **AWS IAM** - Identity and access management
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+ and npm
-- Go 1.21+
-- PostgreSQL database
-- AWS account (for S3)
+- Go 1.19+
+- AWS Account with RDS and S3 access
 
-### Installation
+### 1. Clone the Repository
+```bash
+git clone https://github.com/your-username/recipe-social-media.git
+cd recipe-social-media
+```
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd recipe-social-media
-   ```
+### 2. Frontend Setup
+```bash
+# Install dependencies
+npm install
 
-2. **Install frontend dependencies**
-   ```bash
-   npm install
-   ```
+# Copy environment file
+cp .env.example .env
 
-3. **Set up environment variables**
-   ```bash
-   # Copy environment template
-   cp env.example .env
-   
-   # Edit .env with your values
-   NEXT_PUBLIC_API_URL=http://localhost:8080/api
-   ```
+# Edit .env with your API URL
+NEXT_PUBLIC_API_URL=http://localhost:8080/api
 
-4. **Set up backend environment**
-   ```bash
-   cd backend
-   cp local.env.example local.env
-   # Edit local.env with your database and AWS credentials
-   ```
+# Start development server
+npm run dev
+```
 
-5. **Install Go dependencies**
-   ```bash
-   cd backend
-   go mod tidy
-   ```
+### 3. Backend Setup
+```bash
+# Navigate to backend directory
+cd backend
 
-6. **Set up database**
-   ```bash
-   # Run the SQL schema
-   psql -h your-db-host -U your-username -d your-database -f database/schema.sql
-   ```
+# Copy environment file
+cp local.env.example local.env
 
-7. **Start the application**
-   ```bash
-   # Terminal 1: Start backend
-   cd backend
-   go run main.go
-   
-   # Terminal 2: Start frontend
-   npm run dev
-   ```
+# Edit local.env with your AWS credentials
+# Fill in your database and S3 configuration
 
-8. **Visit the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8080
+# Install Go dependencies
+go mod tidy
+
+# Start the backend server
+go run main.go
+```
+
+### 4. Database Setup
+Run the SQL schema from `backend/database/schema.sql` on your PostgreSQL database.
 
 ## 📁 Project Structure
 
@@ -103,110 +92,95 @@ recipe-social-media/
 ├── app/                    # Next.js app directory
 │   ├── auth/              # Authentication pages
 │   ├── create/            # Create post page
-│   ├── feed/              # Main feed page
+│   ├── feed/              # Main feed
 │   ├── profile/           # User profiles
-│   ├── posts/             # Individual post pages
-│   └── settings/          # User settings
-├── backend/               # Go backend
-│   ├── database/          # Database models and queries
-│   ├── handlers/          # HTTP request handlers
-│   ├── middleware/        # Custom middleware
-│   ├── models/            # Data models
-│   └── services/          # Business logic (S3, etc.)
+│   └── search/            # Search functionality
 ├── components/            # Reusable React components
 ├── contexts/              # React context providers
-└── public/                # Static assets
+├── backend/               # Go backend
+│   ├── handlers/          # HTTP handlers
+│   ├── database/          # Database operations
+│   ├── models/            # Data models
+│   ├── middleware/        # Custom middleware
+│   └── services/          # Business logic
+└── public/               # Static assets
 ```
 
-## 🔧 Environment Variables
+## 🔐 Security Features
 
-### Frontend (.env)
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8080/api
-```
+- **JWT Authentication**: Secure token-based authentication
+- **Input Validation**: Server-side validation for all inputs
+- **SQL Injection Protection**: Parameterized queries
+- **CORS Configuration**: Proper cross-origin resource sharing
+- **Environment Variables**: Sensitive data stored securely
+- **User Authorization**: Users can only edit their own content
 
-### Backend (backend/local.env)
-```env
-# Database
-DB_HOST=your-db-host
-DB_PORT=5432
-DB_USER=your-username
-DB_PASSWORD=your-password
-DB_NAME=your-database
-DB_SSLMODE=require
-
-# JWT
-JWT_SECRET=your-jwt-secret
-
-# AWS S3
-S3_BUCKET=your-bucket-name
-S3_REGION=your-region
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
-```
-
-## 🎯 Key Features Implementation
+## 🌐 API Endpoints
 
 ### Authentication
-- JWT-based authentication
-- Secure password hashing
-- Protected routes with middleware
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
 
-### Image Upload
-- Base64 to S3 conversion
-- Multiple images per post
-- Profile photo uploads
+### Users
+- `GET /api/users/me` - Get current user
+- `PUT /api/users/me` - Update profile
+- `GET /api/users/:id` - Get user profile
+- `POST /api/users/me/profile-photo` - Upload profile photo
 
-### Social Features
-- Like/unlike posts
-- Comment system
-- Follow/unfollow users
-- Personalized feeds
+### Posts
+- `GET /api/posts/feed` - Get user feed
+- `POST /api/posts` - Create new post
+- `GET /api/posts/:id` - Get specific post
+- `DELETE /api/posts/:id` - Delete post
+- `POST /api/posts/:id/like` - Like post
+- `DELETE /api/posts/:id/like` - Unlike post
 
-### Database Design
-- Users, Posts, Likes, Comments tables
-- Triggers for automatic count updates
-- Optimized queries with proper indexing
+### Comments
+- `POST /api/posts/:id/comments` - Add comment
+- `GET /api/posts/:id/comments` - Get comments
+- `DELETE /api/comments/:id` - Delete comment
 
 ## 🚀 Deployment
 
-### Local Development
-- Backend runs on port 8080
-- Frontend runs on port 3000
-- Database: PostgreSQL (local or AWS RDS)
+### Frontend (Vercel)
+1. Connect your GitHub repository to Vercel
+2. Set environment variables in Vercel dashboard
+3. Deploy automatically on push to main branch
 
-### Production Considerations
-- Use environment variables for all secrets
-- Set up proper CORS policies
-- Configure SSL/TLS
-- Use a reverse proxy (nginx)
-- Set up monitoring and logging
+### Backend (AWS EC2)
+1. Launch EC2 instance with Go runtime
+2. Clone repository and build the application
+3. Set up environment variables
+4. Configure reverse proxy (nginx)
+5. Set up SSL certificates
 
-## 📱 Screenshots
-
-*Add screenshots of your application here*
+### Database (AWS RDS)
+1. Create PostgreSQL RDS instance
+2. Configure security groups
+3. Run database migrations
+4. Set up automated backups
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 👨‍💻 Author
 
 **Ansh Pachauri**
 - GitHub: [@anshpachauri](https://github.com/anshpachauri)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/anshpachauri)
+- LinkedIn: [Ansh Pachauri](https://linkedin.com/in/anshpachauri)
 
 ## 🙏 Acknowledgments
 
 - Next.js team for the amazing framework
 - Go team for the excellent language
-- PostgreSQL community for the robust database
-- AWS for cloud services
+- AWS for cloud infrastructure
+- All open-source contributors

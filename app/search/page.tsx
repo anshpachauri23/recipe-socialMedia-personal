@@ -72,8 +72,8 @@ export default function SearchPage() {
         axios.get(`${API_BASE_URL}/users/search?q=${encodeURIComponent(query)}`)
       ])
 
-      setPosts(postsResponse.data)
-      setUsers(usersResponse.data)
+      setPosts(postsResponse.data || [])
+      setUsers(usersResponse.data || [])
     } catch (error: any) {
       setError('Failed to search')
       console.error('Search error:', error)

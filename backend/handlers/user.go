@@ -141,6 +141,11 @@ func (h *UserHandler) SearchUsers(c *gin.Context) {
 		return
 	}
 
+	// Ensure we always return an array, even if empty
+	if users == nil {
+		users = []models.User{}
+	}
+
 	c.JSON(http.StatusOK, users)
 }
 
