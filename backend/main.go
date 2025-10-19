@@ -14,8 +14,11 @@ import (
 
 func main() {
 	// Load environment variables
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
+	if err := godotenv.Load("local.env"); err != nil {
+		log.Println("No local.env file found, trying .env")
+		if err := godotenv.Load(); err != nil {
+			log.Println("No .env file found")
+		}
 	}
 
 	// Initialize database
@@ -24,7 +27,7 @@ func main() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 	defer sqlDB.Close()
-	
+
 	// Wrap in custom DB type
 	db := &database.DB{sqlDB}
 
@@ -58,7 +61,6 @@ func main() {
 		api.GET("/users/search", userHandler.SearchUsers)
 		api.GET("/posts/search", postHandler.SearchPosts)
 		api.GET("/posts/:id", postHandler.GetPost)
-		api.GET("/users/:id", userHandler.GetUserProfile)
 	}
 
 	// Protected routes
@@ -69,6 +71,9 @@ func main() {
 		protected.GET("/users/me", userHandler.GetCurrentUser)
 		protected.PUT("/users/me", userHandler.UpdateProfile)
 		protected.DELETE("/users/me", userHandler.DeleteAccount)
+		protected.POST("/users/me/profile-photo", userHandler.UploadProfilePhoto)
+		protected.GET("/users/:id", userHandler.GetUserProfile)
+		protected.GET("/users/:id/posts", postHandler.GetUserPosts)
 		protected.POST("/users/:id/follow", userHandler.FollowUser)
 		protected.DELETE("/users/:id/follow", userHandler.UnfollowUser)
 		protected.GET("/users/me/following", userHandler.GetFollowing)

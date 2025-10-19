@@ -1,13 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Layout } from '@/components/Layout'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { PostCard } from '@/components/PostCard'
-import { FiUserPlus, FiUserMinus, FiEdit } from 'react-icons/fi'
+import { FiUserPlus, FiUserMinus, FiEdit, FiCamera } from 'react-icons/fi'
 import axios from 'axios'
+import Cookies from 'js-cookie'
 
 interface User {
   id: number
@@ -56,19 +57,32 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [following, setFollowing] = useState(false)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (userId) {
+    if (userId && userId !== 'undefined') {
       fetchProfile()
     }
   }, [userId])
 
   const fetchProfile = async () => {
+    if (!userId || userId === 'undefined') {
+      return
+    }
+
     try {
       setLoading(true)
+      const token = Cookies.get('token')
+      
+      const headers = token ? {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      } : {}
+
       const [profileResponse, postsResponse] = await Promise.all([
-        axios.get(`${API_BASE_URL}/users/${userId}`),
-        axios.get(`${API_BASE_URL}/users/${userId}/posts`)
+        axios.get(`${API_BASE_URL}/users/${userId}`, { headers }),
+        axios.get(`${API_BASE_URL}/users/${userId}/posts`, { headers })
       ])
 
       setUser(profileResponse.data)
@@ -130,6 +144,85 @@ export default function ProfilePage() {
     }
   }
 
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file || !user?.is_own_profile) return
+
+    // Convert to base64
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const base64 = e.target?.result as string
+      const base64Data = base64.split(',')[1] // Remove data:image/jpeg;base64, prefix
+
+      try {
+        setUploadingPhoto(true)
+        const token = Cookies.get('token')
+        
+        const response = await axios.post(`${API_BASE_URL}/users/me/profile-photo`, {
+          image_data: base64Data
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        // Update user profile photo
+        if (user) {
+          setUser({
+            ...user,
+            profile_photo_url: response.data.profile_photo_url
+          })
+        }
+      } catch (error) {
+        console.error('Error uploading photo:', error)
+        setError('Failed to upload photo')
+      } finally {
+        setUploadingPhoto(false)
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const triggerPhotoUpload = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleDeletePost = async (postId: number) => {
+    if (!user?.is_own_profile) return
+
+    if (!confirm('Are you sure you want to delete this post?')) return
+
+    try {
+      const token = Cookies.get('token')
+      await axios.delete(`${API_BASE_URL}/posts/${postId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      // Remove post from local state
+      setPosts(posts.filter(p => p.id !== postId))
+    } catch (error) {
+      console.error('Error deleting post:', error)
+      setError('Failed to delete post')
+    }
+  }
+
+  if (!userId || userId === 'undefined') {
+    return (
+      <Layout>
+        <div className="text-center py-12">
+          <p className="text-red-600 mb-4">Invalid user ID</p>
+          <Link href="/feed" className="btn-primary">
+            Back to Feed
+          </Link>
+        </div>
+      </Layout>
+    )
+  }
+
   if (loading) {
     return (
       <Layout>
@@ -159,11 +252,33 @@ export default function ProfilePage() {
         {/* Profile Header */}
         <div className="card mb-6">
           <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
-            <img
-              src={user.profile_photo_url || '/default-avatar.png'}
-              alt={user.username}
-              className="avatar-xl"
-            />
+            <div className="relative">
+              <img
+                src={user.profile_photo_url || 'https://via.placeholder.com/150x150/8B7355/FFFFFF?text=' + user.username.charAt(0).toUpperCase()}
+                alt={user.username}
+                className="avatar-xl"
+              />
+              {user.is_own_profile && (
+                <button
+                  onClick={triggerPhotoUpload}
+                  disabled={uploadingPhoto}
+                  className="absolute bottom-0 right-0 bg-earth-500 text-white rounded-full p-2 hover:bg-earth-600 disabled:opacity-50 transition-colors"
+                >
+                  {uploadingPhoto ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <FiCamera className="h-4 w-4" />
+                  )}
+                </button>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="hidden"
+              />
+            </div>
             
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
@@ -254,6 +369,8 @@ export default function ProfilePage() {
                   key={post.id}
                   post={post}
                   onLike={() => handleLike(post.id)}
+                  onDelete={() => handleDeletePost(post.id)}
+                  showDelete={user.is_own_profile}
                 />
               ))}
             </div>

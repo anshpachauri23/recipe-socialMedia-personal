@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "backend": "cd backend && go run main.go",
+    "backend:build": "cd backend && go build -o recipe-social-backend main.go",
+    "setup": "npm install && cd backend && go mod tidy"
   },
   "dependencies": {
     "autoprefixer": "^10.4.16",
