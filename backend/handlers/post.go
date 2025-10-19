@@ -363,6 +363,11 @@ func (h *PostHandler) SearchPosts(c *gin.Context) {
 		return
 	}
 
+	// Ensure we always return an array, even if empty
+	if posts == nil {
+		posts = []models.Post{}
+	}
+
 	c.JSON(http.StatusOK, posts)
 }
 
