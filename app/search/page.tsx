@@ -8,6 +8,7 @@ import { PostCard } from '@/components/PostCard'
 import { SearchBar } from '@/components/SearchBar'
 import { FiUser, FiSearch } from 'react-icons/fi'
 import axios from 'axios'
+import { Suspense } from 'react'
 
 interface User {
   id: number
@@ -44,7 +45,7 @@ interface Post {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'
 
-export default function SearchPage() {
+function SearchPage() {
   const searchParams = useSearchParams()
   const query = searchParams.get('q') || ''
   
@@ -260,5 +261,13 @@ export default function SearchPage() {
         )}
       </div>
     </Layout>
+  )
+}
+
+export default function SearchPageSuspense() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchPage />
+    </Suspense>
   )
 }
