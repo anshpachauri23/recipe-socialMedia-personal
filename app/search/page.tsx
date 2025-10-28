@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Layout } from '@/components/Layout'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -8,7 +8,6 @@ import { PostCard } from '@/components/PostCard'
 import { SearchBar } from '@/components/SearchBar'
 import { FiUser, FiSearch } from 'react-icons/fi'
 import axios from 'axios'
-import { Suspense } from 'react'
 
 interface User {
   id: number
@@ -45,7 +44,7 @@ interface Post {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'
 
-function SearchPage() {
+function SearchPageClient() {
   const searchParams = useSearchParams()
   const query = searchParams.get('q') || ''
   
@@ -264,10 +263,10 @@ function SearchPage() {
   )
 }
 
-export default function SearchPageSuspense() {
+export default function SearchPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <SearchPage />
+      <SearchPageClient />
     </Suspense>
   )
 }
