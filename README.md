@@ -1,6 +1,6 @@
 # 🍳 Recipe Social Media Platform
 
-A full-stack social media application for sharing and discovering recipes, built with Next.js, Go, and PostgreSQL.
+A full-stack social media application for sharing and discovering recipes, built with Next.js, Go, and PostgreSQL. This platform allows users to create, share, and discover delicious recipes with a social media experience.
 
 ## ✨ Features
 
@@ -9,25 +9,31 @@ A full-stack social media application for sharing and discovering recipes, built
 - **Social Features**: Like posts, comment, follow users
 - **Profile Management**: Upload profile photos, edit bio, view user posts
 - **Real-time Feed**: Personalized feed with your posts and followed users
+- **Search Functionality**: Search for recipes, users, and ingredients
 - **Image Storage**: AWS S3 integration for scalable image storage
 - **Responsive Design**: Mobile-first design with Tailwind CSS
+- **Step-by-Step Recipes**: Detailed cooking instructions with images
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Next.js 14** - React framework with App Router
-- **TypeScript** - Type-safe JavaScript
-- **Tailwind CSS** - Utility-first CSS framework
-- **React Icons** - Beautiful icons
-- **Axios** - HTTP client
-- **js-cookie** - Cookie management
+- **Next.js 14.2.33** - React framework with App Router
+- **TypeScript 5.2.0** - Type-safe JavaScript
+- **React 18.2.0** - UI library
+- **Tailwind CSS 3.3.0** - Utility-first CSS framework
+- **React Icons 4.12.0** - Beautiful icons
+- **Axios 1.6.0** - HTTP client
+- **js-cookie 3.0.5** - Cookie management
+- **React Hook Form 7.47.0** - Form handling
+- **React Hot Toast 2.4.1** - Notifications
 
 ### Backend
-- **Go** - High-performance backend language
-- **Gin** - HTTP web framework
+- **Go 1.21** - High-performance backend language
+- **Gin 1.9.1** - HTTP web framework
 - **PostgreSQL** - Relational database
 - **AWS S3** - Object storage for images
 - **JWT** - JSON Web Tokens for authentication
+- **AWS SDK Go 1.50.0** - AWS services integration
 
 ### Database
 - **PostgreSQL** - Primary database
@@ -45,8 +51,8 @@ A full-stack social media application for sharing and discovering recipes, built
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
-   cd recipe-social-media
+   git clone https://github.com/anshpachauri23/recipe-socialMedia-personal.git
+   cd recipe-socialMedia-personal
    ```
 
 2. **Install frontend dependencies**
@@ -102,20 +108,52 @@ A full-stack social media application for sharing and discovering recipes, built
 recipe-social-media/
 ├── app/                    # Next.js app directory
 │   ├── auth/              # Authentication pages
+│   │   ├── login/         # Login page
+│   │   └── register/      # Registration page
 │   ├── create/            # Create post page
 │   ├── feed/              # Main feed page
 │   ├── profile/           # User profiles
+│   │   └── [id]/          # Dynamic user profile pages
 │   ├── posts/             # Individual post pages
-│   └── settings/          # User settings
+│   │   └── [id]/          # Dynamic post detail pages
+│   ├── search/            # Search functionality
+│   ├── settings/          # User settings
+│   ├── globals.css        # Global styles
+│   └── layout.tsx         # Root layout
 ├── backend/               # Go backend
 │   ├── database/          # Database models and queries
+│   │   ├── connection.go  # Database connection
+│   │   ├── db.go         # Database operations
+│   │   ├── posts.go      # Post-related queries
+│   │   └── schema.sql    # Database schema
 │   ├── handlers/          # HTTP request handlers
+│   │   ├── auth.go       # Authentication handlers
+│   │   ├── post.go       # Post handlers
+│   │   └── user.go       # User handlers
 │   ├── middleware/        # Custom middleware
+│   │   └── auth.go       # Authentication middleware
 │   ├── models/            # Data models
-│   └── services/          # Business logic (S3, etc.)
+│   │   ├── post.go       # Post model
+│   │   └── user.go       # User model
+│   ├── services/          # Business logic
+│   │   └── s3.go         # AWS S3 integration
+│   ├── main.go           # Application entry point
+│   ├── go.mod            # Go dependencies
+│   └── local.env         # Environment variables
 ├── components/            # Reusable React components
+│   ├── Layout.tsx        # Main layout component
+│   ├── LoadingSpinner.tsx # Loading indicator
+│   ├── PostCard.tsx      # Post display component
+│   └── SearchBar.tsx     # Search functionality
 ├── contexts/              # React context providers
-└── public/                # Static assets
+│   └── AuthContext.tsx   # Authentication context
+├── public/                # Static assets
+├── package.json          # Node.js dependencies
+├── next.config.js        # Next.js configuration
+├── tailwind.config.js    # Tailwind CSS configuration
+├── tsconfig.json         # TypeScript configuration
+├── vercel.json           # Vercel deployment config
+└── DEPLOYMENT.md         # Deployment guide
 ```
 
 ## 🔧 Environment Variables
@@ -172,8 +210,31 @@ AWS_SECRET_ACCESS_KEY=your-secret-key
 
 ### Local Development
 - Backend runs on port 8080
-- Frontend runs on port 3000
+- Frontend runs on port 3000 (or 3001 if 3000 is busy)
 - Database: PostgreSQL (local or AWS RDS)
+
+### Available Scripts
+```bash
+# Frontend development
+npm run dev          # Start Next.js development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+
+# Backend development
+npm run backend      # Start Go backend server
+npm run backend:build # Build Go binary
+
+# Setup
+npm run setup        # Install all dependencies
+```
+
+### Production Deployment
+- See `DEPLOYMENT.md` for detailed Vercel deployment instructions
+- Backend can be deployed to Vercel, Railway, or Render
+- Database: AWS RDS PostgreSQL
+- Storage: AWS S3 for images
+- Environment variables configured in hosting platform
 
 ### Production Considerations
 - Use environment variables for all secrets
@@ -185,6 +246,32 @@ AWS_SECRET_ACCESS_KEY=your-secret-key
 ## 📱 Screenshots
 
 *Add screenshots of your application here*
+
+## 🔄 Current Status
+
+### ✅ Completed Features
+- User authentication system (login/register)
+- Recipe creation with multiple images
+- Social features (likes, comments, follows)
+- User profiles and settings
+- Search functionality for recipes and users
+- Responsive mobile-first design
+- AWS S3 integration for image storage
+- Real-time feed with personalized content
+
+### 🚧 Development Status
+- **Frontend**: Fully functional with Next.js 14
+- **Backend**: Go API with Gin framework
+- **Database**: PostgreSQL with AWS RDS
+- **Deployment**: Ready for Vercel deployment (see DEPLOYMENT.md)
+
+### 🎯 Recent Updates
+- Updated to Next.js 14.2.33
+- Added comprehensive search functionality
+- Implemented step-by-step recipe instructions
+- Enhanced mobile responsiveness
+- Added deployment configuration for Vercel
+- Improved error handling and user feedback
 
 ## 🤝 Contributing
 
