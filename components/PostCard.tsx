@@ -6,6 +6,7 @@ import { FiHeart, FiMessageCircle, FiShare2, FiMoreHorizontal, FiSend, FiTrash2 
 import { formatDistanceToNow } from 'date-fns'
 import axios from 'axios'
 import Cookies from 'js-cookie'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface Post {
   id: number
@@ -53,6 +54,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, onLike, onDelete, showDelete = false }: PostCardProps) {
+  const { user } = useAuth()
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showComments, setShowComments] = useState(false)
   const [comments, setComments] = useState<Comment[]>([])
@@ -284,7 +286,7 @@ export function PostCard({ post, onLike, onDelete, showDelete = false }: PostCar
             {/* Comment form */}
             <form onSubmit={handleCommentSubmit} className="flex space-x-3">
               <img
-                src={`data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="%238B7355"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="16" font-family="sans-serif">U</text></svg>`}
+                src={user?.profile_photo_url || `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="%238B7355"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="16" font-family="sans-serif">${user?.full_name?.charAt(0)?.toUpperCase() || user?.username?.charAt(0)?.toUpperCase() || 'U'}</text></svg>`}
                 alt="Your avatar"
                 className="w-8 h-8 rounded-full bg-earth-400"
               />
