@@ -150,7 +150,7 @@ export function PostCard({ post, onLike, onDelete, showDelete = false }: PostCar
         <div className="flex items-center space-x-3">
           <Link href={`/profile/${post.user.id}`}>
             <img
-              src={post.user.profile_photo_url || 'https://via.placeholder.com/40x40/8B7355/FFFFFF?text=' + post.user.username.charAt(0).toUpperCase()}
+              src={post.user.profile_photo_url || `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="%238B7355"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-family="sans-serif">${post.user.username?.charAt(0)?.toUpperCase() || 'U'}</text></svg>`}
               alt={post.user.username}
               className="avatar"
             />
@@ -284,9 +284,9 @@ export function PostCard({ post, onLike, onDelete, showDelete = false }: PostCar
             {/* Comment form */}
             <form onSubmit={handleCommentSubmit} className="flex space-x-3">
               <img
-                src="https://via.placeholder.com/32x32/8B7355/FFFFFF?text=U"
+                src={`data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="%238B7355"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="16" font-family="sans-serif">U</text></svg>`}
                 alt="Your avatar"
-                className="w-8 h-8 rounded-full"
+                className="w-8 h-8 rounded-full bg-earth-400"
               />
               <div className="flex-1 flex items-center space-x-2">
                 <input

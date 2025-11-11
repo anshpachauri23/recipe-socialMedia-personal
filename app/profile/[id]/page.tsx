@@ -254,9 +254,9 @@ export default function ProfilePage() {
           <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
             <div className="relative">
               <img
-                src={user.profile_photo_url || 'https://via.placeholder.com/150x150/8B7355/FFFFFF?text=' + user.username.charAt(0).toUpperCase()}
+                src={user.profile_photo_url || `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"><rect width="150" height="150" fill="%238B7355"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="60" font-family="sans-serif">${user.username?.charAt(0)?.toUpperCase() || 'U'}</text></svg>`}
                 alt={user.username}
-                className="avatar-xl"
+                className="avatar-xl bg-earth-400"
               />
               {user.is_own_profile && (
                 <button
