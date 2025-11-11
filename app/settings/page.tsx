@@ -47,14 +47,17 @@ export default function SettingsPage() {
     try {
       const response = await axios.get(`${API_BASE_URL}/users/me`)
       const userData = response.data
-      setUser(userData)
-      setProfileData({
-        full_name: userData.full_name,
-        bio: userData.bio || '',
-        profile_photo_url: userData.profile_photo_url || ''
-      })
+      if (userData) {
+        setUser(userData)
+        setProfileData({
+          full_name: userData.full_name || '',
+          bio: userData.bio || '',
+          profile_photo_url: userData.profile_photo_url || ''
+        })
+      }
     } catch (error) {
       console.error('Failed to fetch user:', error)
+      toast.error('Failed to load user data')
     }
   }
 
@@ -74,6 +77,11 @@ export default function SettingsPage() {
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!passwordData.new_password || !passwordData.confirm_password) {
+      toast.error('Please fill in all password fields')
+      return
+    }
     
     if (passwordData.new_password !== passwordData.confirm_password) {
       toast.error('New passwords do not match')
