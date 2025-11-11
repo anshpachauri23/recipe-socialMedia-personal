@@ -23,6 +23,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'danger'>('profile')
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<User | null>(null)
+  const [isInitialized, setIsInitialized] = useState(false)
   const router = useRouter()
 
   // Profile form - ensure all values are always strings
@@ -69,6 +70,7 @@ export default function SettingsPage() {
           bio: String(userData.bio ?? ''),
           profile_photo_url: String(userData.profile_photo_url ?? '')
         })
+        setIsInitialized(true)
       }
     } catch (error: any) {
       // Safe error logging - only log serializable data
@@ -206,7 +208,8 @@ export default function SettingsPage() {
     }
   }
 
-  if (!user) {
+  // Don't render until user is loaded and state is initialized
+  if (!user || !isInitialized) {
     return (
       <Layout>
         <div className="flex justify-center py-12">
@@ -272,8 +275,11 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   className="input-field"
-                  value={profileData.full_name || ''}
-                  onChange={(e) => setProfileData({ ...profileData, full_name: e.target.value || '' })}
+                  value={profileData?.full_name ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value ?? ''
+                    setProfileData(prev => ({ ...prev, full_name: value }))
+                  }}
                 />
               </div>
 
@@ -283,8 +289,11 @@ export default function SettingsPage() {
                   className="input-field resize-none"
                   rows={3}
                   placeholder="Tell us about yourself..."
-                  value={profileData.bio || ''}
-                  onChange={(e) => setProfileData({ ...profileData, bio: e.target.value || '' })}
+                  value={profileData?.bio ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value ?? ''
+                    setProfileData(prev => ({ ...prev, bio: value }))
+                  }}
                 />
               </div>
 
@@ -294,8 +303,11 @@ export default function SettingsPage() {
                   type="url"
                   className="input-field"
                   placeholder="https://example.com/photo.jpg"
-                  value={profileData.profile_photo_url || ''}
-                  onChange={(e) => setProfileData({ ...profileData, profile_photo_url: e.target.value || '' })}
+                  value={profileData?.profile_photo_url ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value ?? ''
+                    setProfileData(prev => ({ ...prev, profile_photo_url: value }))
+                  }}
                 />
               </div>
 
@@ -326,8 +338,11 @@ export default function SettingsPage() {
                 <input
                   type="password"
                   className="input-field"
-                  value={passwordData.current_password || ''}
-                  onChange={(e) => setPasswordData({ ...passwordData, current_password: e.target.value || '' })}
+                  value={passwordData?.current_password ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value ?? ''
+                    setPasswordData(prev => ({ ...prev, current_password: value }))
+                  }}
                 />
               </div>
 
@@ -336,8 +351,11 @@ export default function SettingsPage() {
                 <input
                   type="password"
                   className="input-field"
-                  value={passwordData.new_password || ''}
-                  onChange={(e) => setPasswordData({ ...passwordData, new_password: e.target.value || '' })}
+                  value={passwordData?.new_password ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value ?? ''
+                    setPasswordData(prev => ({ ...prev, new_password: value }))
+                  }}
                 />
               </div>
 
@@ -346,8 +364,11 @@ export default function SettingsPage() {
                 <input
                   type="password"
                   className="input-field"
-                  value={passwordData.confirm_password || ''}
-                  onChange={(e) => setPasswordData({ ...passwordData, confirm_password: e.target.value || '' })}
+                  value={passwordData?.confirm_password ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value ?? ''
+                    setPasswordData(prev => ({ ...prev, confirm_password: value }))
+                  }}
                 />
               </div>
 
