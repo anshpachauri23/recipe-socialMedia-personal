@@ -322,7 +322,7 @@ export default function ProfilePage() {
 
               <div className="flex justify-center md:justify-start space-x-6 text-sm">
                 <div className="text-center">
-                  <div className="font-semibold text-earth-800">{posts.length}</div>
+                  <div className="font-semibold text-earth-800">{posts?.length || 0}</div>
                   <div className="text-earth-600">Recipes</div>
                 </div>
                 <div className="text-center">
@@ -344,7 +344,7 @@ export default function ProfilePage() {
             {user.is_own_profile ? 'Your Recipes' : 'Recipes'}
           </h2>
           
-          {posts.length === 0 ? (
+          {!posts || posts.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl text-earth-300 mb-4">🍳</div>
               <h3 className="text-lg font-medium text-earth-800 mb-2">
