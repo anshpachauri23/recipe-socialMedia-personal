@@ -7,6 +7,7 @@ import { formatDistanceToNow } from 'date-fns'
 import axios from 'axios'
 import Cookies from 'js-cookie'
 import { useAuth } from '@/contexts/AuthContext'
+import toast from 'react-hot-toast'
 
 interface Post {
   id: number
@@ -145,6 +146,36 @@ export function PostCard({ post, onLike, onDelete, showDelete = false }: PostCar
     setShowComments(!showComments)
   }
 
+  const handleShare = async () => {
+    const postUrl = `${window.location.origin}/posts/${post.id}`
+    
+    // Try to use Web Share API (mobile devices)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: post.title,
+          text: post.description || post.title,
+          url: postUrl
+        })
+        toast.success('Shared successfully!')
+      } catch (error: any) {
+        // User cancelled or share failed
+        if (error.name !== 'AbortError') {
+          console.error('Error sharing:', error)
+        }
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(postUrl)
+        toast.success('Link copied to clipboard!')
+      } catch (error) {
+        console.error('Error copying to clipboard:', error)
+        toast.error('Failed to copy link')
+      }
+    }
+  }
+
   return (
     <article className="post-card">
       {/* Header */}
@@ -246,7 +277,10 @@ export function PostCard({ post, onLike, onDelete, showDelete = false }: PostCar
             <span>{post.total_comments}</span>
           </button>
           
-          <button className="action-btn">
+          <button 
+            onClick={handleShare}
+            className="action-btn"
+          >
             <FiShare2 className="h-6 w-6" />
             <span>Share</span>
           </button>
