@@ -101,49 +101,103 @@ func (db *DB) GetPostImages(postID int) ([]models.PostImage, error) {
 }
 
 func (db *DB) GetFeed(userID int, limit, offset int) ([]models.FeedPost, error) {
-	query := `
-		SELECT p.id, p.user_id, p.title, p.description, p.total_likes, p.total_comments,
-			   p.created_at, p.updated_at,
-			   u.id, u.username, u.full_name, u.profile_photo_url, u.follower_count
-		FROM posts p
-		JOIN users u ON p.user_id = u.id
-		WHERE p.user_id IN (
-			SELECT following_id FROM follows WHERE follower_id = $1
-		) OR u.follower_count > 1000 OR p.user_id = $1
-		ORDER BY p.created_at DESC
-		LIMIT $2 OFFSET $3`
-
-	rows, err := db.Query(query, userID, limit, offset)
+	// Check if user has any follows
+	var followCount int
+	followQuery := `SELECT COUNT(*) FROM follows WHERE follower_id = $1`
+	err := db.QueryRow(followQuery, userID).Scan(&followCount)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	var posts []models.FeedPost
-	for rows.Next() {
-		var post models.FeedPost
-		var user models.User
-		err := rows.Scan(
-			&post.ID, &post.UserID, &post.Title, &post.Description,
-			&post.TotalLikes, &post.TotalComments, &post.CreatedAt, &post.UpdatedAt,
-			&user.ID, &user.Username, &user.FullName, &user.ProfilePhotoURL, &user.FollowerCount,
-		)
+	var query string
+	// If user has no follows, show all posts
+	// Otherwise, show posts from followed users, popular users, or own posts
+	if followCount == 0 {
+		query = `
+			SELECT p.id, p.user_id, p.title, p.description, p.total_likes, p.total_comments,
+				   p.created_at, p.updated_at,
+				   u.id, u.username, u.full_name, u.profile_photo_url, u.follower_count
+			FROM posts p
+			JOIN users u ON p.user_id = u.id
+			ORDER BY p.created_at DESC
+			LIMIT $1 OFFSET $2`
+		rows, err := db.Query(query, limit, offset)
 		if err != nil {
 			return nil, err
 		}
-		post.User = user
+		defer rows.Close()
 
-		// Fetch images for this post
-		images, err := db.GetPostImages(post.ID)
+		var posts []models.FeedPost
+		for rows.Next() {
+			var post models.FeedPost
+			var user models.User
+			err := rows.Scan(
+				&post.ID, &post.UserID, &post.Title, &post.Description,
+				&post.TotalLikes, &post.TotalComments, &post.CreatedAt, &post.UpdatedAt,
+				&user.ID, &user.Username, &user.FullName, &user.ProfilePhotoURL, &user.FollowerCount,
+			)
+			if err != nil {
+				return nil, err
+			}
+			post.User = user
+
+			// Fetch images for this post
+			images, err := db.GetPostImages(post.ID)
+			if err != nil {
+				return nil, err
+			}
+			post.Images = images
+
+			posts = append(posts, post)
+		}
+
+		return posts, nil
+	} else {
+		// User has follows - show personalized feed
+		query = `
+			SELECT p.id, p.user_id, p.title, p.description, p.total_likes, p.total_comments,
+				   p.created_at, p.updated_at,
+				   u.id, u.username, u.full_name, u.profile_photo_url, u.follower_count
+			FROM posts p
+			JOIN users u ON p.user_id = u.id
+			WHERE p.user_id IN (
+				SELECT following_id FROM follows WHERE follower_id = $1
+			) OR u.follower_count > 1000 OR p.user_id = $1
+			ORDER BY p.created_at DESC
+			LIMIT $2 OFFSET $3`
+
+		rows, err := db.Query(query, userID, limit, offset)
 		if err != nil {
 			return nil, err
 		}
-		post.Images = images
+		defer rows.Close()
 
-		posts = append(posts, post)
+		var posts []models.FeedPost
+		for rows.Next() {
+			var post models.FeedPost
+			var user models.User
+			err := rows.Scan(
+				&post.ID, &post.UserID, &post.Title, &post.Description,
+				&post.TotalLikes, &post.TotalComments, &post.CreatedAt, &post.UpdatedAt,
+				&user.ID, &user.Username, &user.FullName, &user.ProfilePhotoURL, &user.FollowerCount,
+			)
+			if err != nil {
+				return nil, err
+			}
+			post.User = user
+
+			// Fetch images for this post
+			images, err := db.GetPostImages(post.ID)
+			if err != nil {
+				return nil, err
+			}
+			post.Images = images
+
+			posts = append(posts, post)
+		}
+
+		return posts, nil
 	}
-
-	return posts, nil
 }
 
 func (db *DB) SearchPosts(query string, limit, offset int) ([]models.Post, error) {

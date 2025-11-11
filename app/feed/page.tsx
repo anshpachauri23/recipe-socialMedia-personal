@@ -96,7 +96,7 @@ export default function FeedPage() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-earth-800 mb-2">Your Feed</h1>
-          <p className="text-earth-600">Discover amazing recipes from your network</p>
+          <p className="text-earth-600">Discover amazing recipes from the community</p>
         </div>
 
         {/* Search Bar */}
@@ -122,9 +122,9 @@ export default function FeedPage() {
         ) : !posts || posts.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl text-earth-300 mb-4">🍳</div>
-            <h3 className="text-lg font-medium text-earth-800 mb-2">No posts yet</h3>
+            <h3 className="text-lg font-medium text-earth-800 mb-2">No recipes yet</h3>
             <p className="text-earth-600 mb-6">
-              Follow some users or create your first recipe to see posts here!
+              Be the first to share a recipe with the community!
             </p>
             <a href="/create" className="btn-primary">
               Create Your First Recipe
