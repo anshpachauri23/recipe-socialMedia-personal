@@ -312,19 +312,19 @@ export function PostCard({ post, onLike, onDelete, showDelete = false }: PostCar
               <div className="text-center text-earth-500 text-sm py-2">
                 Loading comments...
               </div>
-            ) : comments.length > 0 ? (
+            ) : comments && comments.length > 0 ? (
               <div className="space-y-3">
                 {comments.map((comment) => (
                   <div key={comment.id} className="flex space-x-3">
                     <img
-                      src={comment.user.profile_photo_url || 'https://via.placeholder.com/32x32/8B7355/FFFFFF?text=' + comment.user.full_name.charAt(0).toUpperCase()}
-                      alt={comment.user.full_name}
+                      src={comment.user.profile_photo_url || 'https://via.placeholder.com/32x32/8B7355/FFFFFF?text=' + (comment.user.full_name?.charAt(0)?.toUpperCase() || 'U')}
+                      alt={comment.user.full_name || 'User'}
                       className="w-8 h-8 rounded-full"
                     />
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
                         <span className="font-medium text-earth-800 text-sm">
-                          {comment.user.full_name}
+                          {comment.user.full_name || 'User'}
                         </span>
                         <span className="text-earth-500 text-xs">
                           {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
