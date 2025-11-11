@@ -1,0 +1,6 @@
+local.env
+*.log
+recipe-social-backend
+.DS_Store
+.git
+.gitignore
