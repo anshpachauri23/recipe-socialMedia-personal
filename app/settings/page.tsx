@@ -25,15 +25,23 @@ export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null)
   const router = useRouter()
 
-  // Profile form
-  const [profileData, setProfileData] = useState({
+  // Profile form - ensure all values are always strings
+  const [profileData, setProfileData] = useState<{
+    full_name: string
+    bio: string
+    profile_photo_url: string
+  }>({
     full_name: '',
     bio: '',
     profile_photo_url: ''
   })
 
-  // Password form
-  const [passwordData, setPasswordData] = useState({
+  // Password form - ensure all values are always strings
+  const [passwordData, setPasswordData] = useState<{
+    current_password: string
+    new_password: string
+    confirm_password: string
+  }>({
     current_password: '',
     new_password: '',
     confirm_password: ''
@@ -57,9 +65,9 @@ export default function SettingsPage() {
           profile_photo_url: userData.profile_photo_url || undefined
         })
         setProfileData({
-          full_name: String(userData.full_name || ''),
-          bio: String(userData.bio || ''),
-          profile_photo_url: String(userData.profile_photo_url || '')
+          full_name: String(userData.full_name ?? ''),
+          bio: String(userData.bio ?? ''),
+          profile_photo_url: String(userData.profile_photo_url ?? '')
         })
       }
     } catch (error: any) {
@@ -264,8 +272,8 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   className="input-field"
-                  value={profileData.full_name}
-                  onChange={(e) => setProfileData({ ...profileData, full_name: e.target.value })}
+                  value={profileData.full_name || ''}
+                  onChange={(e) => setProfileData({ ...profileData, full_name: e.target.value || '' })}
                 />
               </div>
 
@@ -275,8 +283,8 @@ export default function SettingsPage() {
                   className="input-field resize-none"
                   rows={3}
                   placeholder="Tell us about yourself..."
-                  value={profileData.bio}
-                  onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                  value={profileData.bio || ''}
+                  onChange={(e) => setProfileData({ ...profileData, bio: e.target.value || '' })}
                 />
               </div>
 
@@ -286,8 +294,8 @@ export default function SettingsPage() {
                   type="url"
                   className="input-field"
                   placeholder="https://example.com/photo.jpg"
-                  value={profileData.profile_photo_url}
-                  onChange={(e) => setProfileData({ ...profileData, profile_photo_url: e.target.value })}
+                  value={profileData.profile_photo_url || ''}
+                  onChange={(e) => setProfileData({ ...profileData, profile_photo_url: e.target.value || '' })}
                 />
               </div>
 
@@ -318,8 +326,8 @@ export default function SettingsPage() {
                 <input
                   type="password"
                   className="input-field"
-                  value={passwordData.current_password}
-                  onChange={(e) => setPasswordData({ ...passwordData, current_password: e.target.value })}
+                  value={passwordData.current_password || ''}
+                  onChange={(e) => setPasswordData({ ...passwordData, current_password: e.target.value || '' })}
                 />
               </div>
 
@@ -328,8 +336,8 @@ export default function SettingsPage() {
                 <input
                   type="password"
                   className="input-field"
-                  value={passwordData.new_password}
-                  onChange={(e) => setPasswordData({ ...passwordData, new_password: e.target.value })}
+                  value={passwordData.new_password || ''}
+                  onChange={(e) => setPasswordData({ ...passwordData, new_password: e.target.value || '' })}
                 />
               </div>
 
@@ -338,8 +346,8 @@ export default function SettingsPage() {
                 <input
                   type="password"
                   className="input-field"
-                  value={passwordData.confirm_password}
-                  onChange={(e) => setPasswordData({ ...passwordData, confirm_password: e.target.value })}
+                  value={passwordData.confirm_password || ''}
+                  onChange={(e) => setPasswordData({ ...passwordData, confirm_password: e.target.value || '' })}
                 />
               </div>
 
