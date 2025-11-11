@@ -6,13 +6,15 @@ A full-stack social media application for sharing and discovering recipes, built
 
 - **User Authentication**: Secure login/register with JWT tokens
 - **Recipe Sharing**: Create posts with multiple images and step-by-step instructions
-- **Social Features**: Like posts, comment, follow users
+- **Social Features**: Like posts, comment, follow users, share recipes
 - **Profile Management**: Upload profile photos, edit bio, view user posts
-- **Real-time Feed**: Personalized feed with your posts and followed users
+- **Smart Feed**: Personalized feed for followed users, all recipes for new users
 - **Search Functionality**: Search for recipes, users, and ingredients
 - **Image Storage**: AWS S3 integration for scalable image storage
 - **Responsive Design**: Mobile-first design with Tailwind CSS
 - **Step-by-Step Recipes**: Detailed cooking instructions with images
+- **Share Functionality**: Copy post links or use native share on mobile
+- **Avatar Generation**: Automatic SVG avatars with user initials
 
 ## 🛠️ Tech Stack
 
@@ -35,9 +37,10 @@ A full-stack social media application for sharing and discovering recipes, built
 - **JWT** - JSON Web Tokens for authentication
 - **AWS SDK Go 1.50.0** - AWS services integration
 
-### Database
+### Database & Storage
 - **PostgreSQL** - Primary database
 - **AWS RDS** - Managed PostgreSQL service
+- **AWS S3** - Image storage and CDN
 
 ## 🚀 Quick Start
 
@@ -102,6 +105,36 @@ A full-stack social media application for sharing and discovering recipes, built
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8080
 
+## 🌐 Live Deployment
+
+The application is currently deployed and accessible at:
+
+- **Frontend (Vercel)**: https://your-app.vercel.app
+- **Backend (Northflank)**: https://your-backend.northflank.app
+- **Database**: AWS RDS PostgreSQL (us-east-2)
+- **Image Storage**: AWS S3 (us-east-2)
+
+### Deployment Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  Users → Vercel (Frontend)                                  │
+│            ↓                                                │
+│         Northflank (Go Backend)                             │
+│            ↓                    ↓                           │
+│     AWS RDS (PostgreSQL)   AWS S3 (Images)                  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Deployment Services
+
+- **Vercel**: Hosts the Next.js frontend with automatic deployments from GitHub
+- **Northflank**: Runs the Go backend in a Docker container
+- **AWS RDS**: Managed PostgreSQL database with automatic backups
+- **AWS S3**: Scalable object storage for recipe and profile images
+
 ## 📁 Project Structure
 
 ```
@@ -152,36 +185,46 @@ recipe-social-media/
 ├── next.config.js        # Next.js configuration
 ├── tailwind.config.js    # Tailwind CSS configuration
 ├── tsconfig.json         # TypeScript configuration
-├── vercel.json           # Vercel deployment config
-└── DEPLOYMENT.md         # Deployment guide
+├── Dockerfile            # Docker configuration for backend
+├── .dockerignore         # Docker ignore file
+└── northflank.yaml       # Northflank deployment config
 ```
 
 ## 🔧 Environment Variables
 
 ### Frontend (.env)
 ```env
+# Local Development
 NEXT_PUBLIC_API_URL=http://localhost:8080/api
+
+# Production (Vercel)
+NEXT_PUBLIC_API_URL=https://your-backend.northflank.app/api
 ```
 
 ### Backend (backend/local.env)
 ```env
-# Database
-DB_HOST=your-db-host
+# Server
+PORT=8080
+
+# Database (AWS RDS)
+DB_HOST=your-rds-endpoint.rds.amazonaws.com
 DB_PORT=5432
 DB_USER=your-username
 DB_PASSWORD=your-password
-DB_NAME=your-database
+DB_NAME=postgres
 DB_SSLMODE=require
 
-# JWT
-JWT_SECRET=your-jwt-secret
+# JWT Authentication
+JWT_SECRET=your-secure-jwt-secret-key
 
-# AWS S3
-S3_BUCKET=your-bucket-name
-S3_REGION=your-region
+# AWS S3 Configuration
+S3_BUCKET=recipe-social-images
+S3_REGION=us-east-2
 AWS_ACCESS_KEY_ID=your-access-key
 AWS_SECRET_ACCESS_KEY=your-secret-key
 ```
+
+**Note**: In production (Northflank), these are set as environment variables in the dashboard.
 
 ## 🎯 Key Features Implementation
 
@@ -197,9 +240,11 @@ AWS_SECRET_ACCESS_KEY=your-secret-key
 
 ### Social Features
 - Like/unlike posts
-- Comment system
+- Real-time comment system with user avatars
 - Follow/unfollow users
-- Personalized feeds
+- Personalized feeds based on follows
+- Share posts via native share API or clipboard
+- User profile pages with post history
 
 ### Database Design
 - Users, Posts, Likes, Comments tables
@@ -210,7 +255,7 @@ AWS_SECRET_ACCESS_KEY=your-secret-key
 
 ### Local Development
 - Backend runs on port 8080
-- Frontend runs on port 3000 (or 3001 if 3000 is busy)
+- Frontend runs on port 3000
 - Database: PostgreSQL (local or AWS RDS)
 
 ### Available Scripts
@@ -230,18 +275,48 @@ npm run setup        # Install all dependencies
 ```
 
 ### Production Deployment
-- See `DEPLOYMENT.md` for detailed Vercel deployment instructions
-- Backend can be deployed to Vercel, Railway, or Render
-- Database: AWS RDS PostgreSQL
-- Storage: AWS S3 for images
-- Environment variables configured in hosting platform
+
+#### Frontend (Vercel)
+1. Connect GitHub repository to Vercel
+2. Configure environment variables:
+   - `NEXT_PUBLIC_API_URL`: Backend API URL
+3. Deploy automatically on push to `main` branch
+4. Vercel handles:
+   - Automatic builds
+   - CDN distribution
+   - SSL certificates
+   - Preview deployments for pull requests
+
+#### Backend (Northflank)
+1. Create a new service from GitHub repository
+2. Use `Dockerfile` in backend directory
+3. Configure environment variables (see above)
+4. Deploy automatically on push to `main` branch
+5. Northflank handles:
+   - Docker container builds
+   - Health checks
+   - Automatic restarts
+   - Zero downtime deployments
+
+#### Database (AWS RDS)
+- PostgreSQL 14 or higher
+- Configure security groups for Northflank IPs
+- Enable SSL connections
+- Set up automated backups
+
+#### Storage (AWS S3)
+- Create S3 bucket for image storage
+- Configure CORS for frontend domain
+- Set up IAM user with S3 access
+- Enable versioning for data protection
 
 ### Production Considerations
-- Use environment variables for all secrets
-- Set up proper CORS policies
-- Configure SSL/TLS
-- Use a reverse proxy (nginx)
-- Set up monitoring and logging
+- ✅ All secrets managed via environment variables
+- ✅ CORS policies configured for Vercel domain
+- ✅ SSL/TLS enabled on all services
+- ✅ Database connections use SSL
+- ✅ Automatic deployments from GitHub
+- ✅ Health check endpoints configured
 
 ## 📱 Screenshots
 
@@ -252,26 +327,33 @@ npm run setup        # Install all dependencies
 ### ✅ Completed Features
 - User authentication system (login/register)
 - Recipe creation with multiple images
-- Social features (likes, comments, follows)
+- Social features (likes, comments, follows, share)
 - User profiles and settings
 - Search functionality for recipes and users
 - Responsive mobile-first design
 - AWS S3 integration for image storage
-- Real-time feed with personalized content
+- Smart feed (personalized or all recipes for new users)
+- Avatar generation with user initials
+- Share functionality (native share API + clipboard)
+- Null-safe error handling throughout the app
 
 ### 🚧 Development Status
-- **Frontend**: Fully functional with Next.js 14
-- **Backend**: Go API with Gin framework
-- **Database**: PostgreSQL with AWS RDS
-- **Deployment**: Ready for Vercel deployment (see DEPLOYMENT.md)
+- **Frontend**: ✅ Deployed on Vercel (Production)
+- **Backend**: ✅ Deployed on Northflank (Production)
+- **Database**: ✅ AWS RDS PostgreSQL (Production)
+- **Storage**: ✅ AWS S3 (Production)
+- **CI/CD**: ✅ Automatic deployments from GitHub
 
-### 🎯 Recent Updates
-- Updated to Next.js 14.2.33
-- Added comprehensive search functionality
-- Implemented step-by-step recipe instructions
-- Enhanced mobile responsiveness
-- Added deployment configuration for Vercel
-- Improved error handling and user feedback
+### 🎯 Recent Updates (November 2024)
+- ✅ Deployed to production (Vercel + Northflank)
+- ✅ Fixed all null-safety issues in forms and comments
+- ✅ Replaced external placeholder images with inline SVG avatars
+- ✅ Added share functionality for posts
+- ✅ Improved comment system with user avatars
+- ✅ Enhanced new user experience (show all recipes)
+- ✅ Fixed profile page rendering issues
+- ✅ Updated error handling across all pages
+- ✅ Migrated from Render to Northflank for better performance
 
 ## 🤝 Contributing
 
