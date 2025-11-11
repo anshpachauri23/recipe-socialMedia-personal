@@ -48,11 +48,18 @@ export default function SettingsPage() {
       const response = await axios.get(`${API_BASE_URL}/users/me`)
       const userData = response.data
       if (userData) {
-        setUser(userData)
-        setProfileData({
+        setUser({
+          id: userData.id || 0,
+          username: userData.username || '',
+          email: userData.email || '',
           full_name: userData.full_name || '',
-          bio: userData.bio || '',
-          profile_photo_url: userData.profile_photo_url || ''
+          bio: userData.bio || undefined,
+          profile_photo_url: userData.profile_photo_url || undefined
+        })
+        setProfileData({
+          full_name: String(userData.full_name || ''),
+          bio: String(userData.bio || ''),
+          profile_photo_url: String(userData.profile_photo_url || '')
         })
       }
     } catch (error) {
@@ -78,17 +85,22 @@ export default function SettingsPage() {
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!passwordData.new_password || !passwordData.confirm_password) {
+    // Ensure all fields are strings and not null/undefined
+    const newPassword = String(passwordData.new_password || '')
+    const confirmPassword = String(passwordData.confirm_password || '')
+    const currentPassword = String(passwordData.current_password || '')
+    
+    if (!newPassword || !confirmPassword || !currentPassword) {
       toast.error('Please fill in all password fields')
       return
     }
     
-    if (passwordData.new_password !== passwordData.confirm_password) {
+    if (newPassword !== confirmPassword) {
       toast.error('New passwords do not match')
       return
     }
 
-    if (passwordData.new_password.length < 6) {
+    if (newPassword.length < 6) {
       toast.error('New password must be at least 6 characters')
       return
     }
@@ -97,8 +109,8 @@ export default function SettingsPage() {
 
     try {
       await axios.put(`${API_BASE_URL}/users/me/password`, {
-        current_password: passwordData.current_password,
-        new_password: passwordData.new_password
+        current_password: currentPassword,
+        new_password: newPassword
       })
       toast.success('Password updated successfully!')
       setPasswordData({
