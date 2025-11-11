@@ -62,8 +62,23 @@ export default function SettingsPage() {
           profile_photo_url: String(userData.profile_photo_url || '')
         })
       }
-    } catch (error) {
-      console.error('Failed to fetch user:', error)
+    } catch (error: any) {
+      // Safe error logging - only log serializable data
+      const errorMessage = error?.response?.data?.error || error?.message || 'Unknown error'
+      const errorStatus = error?.response?.status
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to fetch user:', errorMessage, errorStatus ? `Status: ${errorStatus}` : '')
+      }
+      // If unauthorized, redirect to login
+      if (errorStatus === 401) {
+        try {
+          router.push('/auth/login')
+        } catch (routerError) {
+          // Fallback to window.location if router fails
+          window.location.href = '/auth/login'
+        }
+        return
+      }
       toast.error('Failed to load user data')
     }
   }
@@ -75,8 +90,24 @@ export default function SettingsPage() {
     try {
       await axios.put(`${API_BASE_URL}/users/me`, profileData)
       toast.success('Profile updated successfully!')
+      // Refetch user data to get updated info
+      await fetchUser()
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to update profile')
+      // Safe error logging
+      const errorMessage = error?.response?.data?.error || error?.message || 'Unknown error'
+      const errorStatus = error?.response?.status
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Profile update error:', errorMessage, errorStatus ? `Status: ${errorStatus}` : '')
+      }
+      if (errorStatus === 401) {
+        try {
+          router.push('/auth/login')
+        } catch (routerError) {
+          window.location.href = '/auth/login'
+        }
+        return
+      }
+      toast.error(errorMessage || 'Failed to update profile')
     } finally {
       setLoading(false)
     }
@@ -119,7 +150,21 @@ export default function SettingsPage() {
         confirm_password: ''
       })
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to update password')
+      // Safe error logging
+      const errorMessage = error?.response?.data?.error || error?.message || 'Unknown error'
+      const errorStatus = error?.response?.status
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Password update error:', errorMessage, errorStatus ? `Status: ${errorStatus}` : '')
+      }
+      if (errorStatus === 401) {
+        try {
+          router.push('/auth/login')
+        } catch (routerError) {
+          window.location.href = '/auth/login'
+        }
+        return
+      }
+      toast.error(errorMessage || 'Failed to update password')
     } finally {
       setLoading(false)
     }
@@ -139,7 +184,13 @@ export default function SettingsPage() {
     try {
       await axios.delete(`${API_BASE_URL}/users/me`)
       toast.success('Account deleted successfully')
-      router.push('/auth/login')
+      // Use try-catch for router.push to handle any navigation errors
+      try {
+        router.push('/auth/login')
+      } catch (routerError) {
+        // Fallback to window.location if router fails
+        window.location.href = '/auth/login'
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to delete account')
     } finally {
