@@ -124,7 +124,7 @@ export function PostCard({ post, onLike, onDelete, showDelete = false }: PostCar
           'Content-Type': 'application/json'
         }
       })
-      setComments([response.data, ...comments])
+      setComments([response.data, ...(comments || [])])
       setNewComment('')
     } catch (error: any) {
       console.error('Error submitting comment:', error)
@@ -317,9 +317,9 @@ export function PostCard({ post, onLike, onDelete, showDelete = false }: PostCar
                 {comments.map((comment) => (
                   <div key={comment.id} className="flex space-x-3">
                     <img
-                      src={comment.user.profile_photo_url || 'https://via.placeholder.com/32x32/8B7355/FFFFFF?text=' + (comment.user.full_name?.charAt(0)?.toUpperCase() || 'U')}
+                      src={comment.user.profile_photo_url || `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="%238B7355"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="16" font-family="sans-serif">${comment.user.full_name?.charAt(0)?.toUpperCase() || 'U'}</text></svg>`}
                       alt={comment.user.full_name || 'User'}
-                      className="w-8 h-8 rounded-full"
+                      className="w-8 h-8 rounded-full bg-earth-400"
                     />
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
