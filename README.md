@@ -38,8 +38,7 @@ A full-stack social media application for sharing and discovering recipes, built
 - **AWS SDK Go 1.50.0** - AWS services integration
 
 ### Database & Storage
-- **PostgreSQL** - Primary database
-- **AWS RDS** - Managed PostgreSQL service
+- **PostgreSQL** - Primary database (managed by Northflank)
 - **AWS S3** - Image storage and CDN
 
 ## 🚀 Quick Start
@@ -111,8 +110,8 @@ The application is currently deployed and accessible at:
 
 - **Frontend (Vercel)**: https://your-app.vercel.app
 - **Backend (Northflank)**: https://your-backend.northflank.app
-- **Database**: AWS RDS PostgreSQL (us-east-2)
-- **Image Storage**: AWS S3 (us-east-2)
+- **Database**: Northflank PostgreSQL addon (private network to backend)
+- **Image Storage**: AWS S3 (us-east-1)
 
 ### Deployment Architecture
 
@@ -121,9 +120,9 @@ The application is currently deployed and accessible at:
 │                                                             │
 │  Users → Vercel (Frontend)                                  │
 │            ↓                                                │
-│         Northflank (Go Backend)                             │
-│            ↓                    ↓                           │
-│     AWS RDS (PostgreSQL)   AWS S3 (Images)                  │
+│         Northflank (Go Backend) ◀──── Northflank Postgres   │
+│            ↓                          (private network)     │
+│         AWS S3 (Images, us-east-1)                          │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -131,9 +130,8 @@ The application is currently deployed and accessible at:
 ### Deployment Services
 
 - **Vercel**: Hosts the Next.js frontend with automatic deployments from GitHub
-- **Northflank**: Runs the Go backend in a Docker container
-- **AWS RDS**: Managed PostgreSQL database with automatic backups
-- **AWS S3**: Scalable object storage for recipe and profile images
+- **Northflank**: Runs the Go backend in a Docker container alongside a managed PostgreSQL addon (linked over Northflank's internal private network — no public DB exposure, no egress costs)
+- **AWS S3**: Scalable object storage for recipe and profile images, with a least-privilege IAM user for the backend and a public-read policy scoped to the `recipe-images/*` prefix
 
 ## 📁 Project Structure
 
@@ -206,8 +204,8 @@ NEXT_PUBLIC_API_URL=https://your-backend.northflank.app/api
 # Server
 PORT=8080
 
-# Database (AWS RDS)
-DB_HOST=your-rds-endpoint.rds.amazonaws.com
+# Database (Northflank Postgres — use the addon's "public" connection string for local dev)
+DB_HOST=your-addon-host.northflank.app
 DB_PORT=5432
 DB_USER=your-username
 DB_PASSWORD=your-password
@@ -218,13 +216,13 @@ DB_SSLMODE=require
 JWT_SECRET=your-secure-jwt-secret-key
 
 # AWS S3 Configuration
-S3_BUCKET=recipe-social-images
-S3_REGION=us-east-2
+S3_BUCKET=your-s3-bucket-name
+S3_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your-access-key
 AWS_SECRET_ACCESS_KEY=your-secret-key
 ```
 
-**Note**: In production (Northflank), these are set as environment variables in the dashboard.
+**Note**: In production, the backend on Northflank reads `DB_*` from the Postgres addon's linked secrets (mapped from `POSTGRES_HOST`, `POSTGRES_USERNAME`, etc. → `DB_HOST`, `DB_USER`, etc.) and uses the addon's **internal** host. S3 credentials are set as plain env vars / secrets on the service.
 
 ## 🎯 Key Features Implementation
 
@@ -256,7 +254,7 @@ AWS_SECRET_ACCESS_KEY=your-secret-key
 ### Local Development
 - Backend runs on port 8080
 - Frontend runs on port 3000
-- Database: PostgreSQL (local or AWS RDS)
+- Database: PostgreSQL (local Docker container or the Northflank addon's public connection string)
 
 ### Available Scripts
 ```bash
@@ -298,17 +296,18 @@ npm run setup        # Install all dependencies
    - Automatic restarts
    - Zero downtime deployments
 
-#### Database (AWS RDS)
-- PostgreSQL 14 or higher
-- Configure security groups for Northflank IPs
-- Enable SSL connections
-- Set up automated backups
+#### Database (Northflank Postgres addon)
+- Created as a managed addon in the same Northflank project as the backend service
+- Linked to the backend via "Linked secrets", remapping `POSTGRES_*` vars to the `DB_*` names the Go code expects
+- Backend uses the addon's **internal** host (private network) — public host is only used for one-off `psql` access
+- SSL required (`DB_SSLMODE=require`)
+- Schema initialized once by running [backend/database/schema.sql](backend/database/schema.sql) in the Northflank Postgres console
 
 #### Storage (AWS S3)
-- Create S3 bucket for image storage
-- Configure CORS for frontend domain
-- Set up IAM user with S3 access
-- Enable versioning for data protection
+- Bucket in `us-east-1` with "Block all public access" disabled
+- Bucket policy grants public `s3:GetObject` only on the `recipe-images/*` prefix
+- IAM user `recipe-social-backend-s3` with an inline least-privilege policy (`s3:PutObject`, `s3:GetObject` on `recipe-images/*` only)
+- CORS configured to allow GET from any origin
 
 ### Production Considerations
 - ✅ All secrets managed via environment variables
@@ -340,11 +339,13 @@ npm run setup        # Install all dependencies
 ### 🚧 Development Status
 - **Frontend**: ✅ Deployed on Vercel (Production)
 - **Backend**: ✅ Deployed on Northflank (Production)
-- **Database**: ✅ AWS RDS PostgreSQL (Production)
-- **Storage**: ✅ AWS S3 (Production)
+- **Database**: ✅ Northflank Postgres addon (Production)
+- **Storage**: ✅ AWS S3 — `us-east-1` (Production)
 - **CI/CD**: ✅ Automatic deployments from GitHub
 
-### 🎯 Recent Updates (November 2024)
+### 🎯 Recent Updates
+- ✅ Migrated database from AWS RDS to the Northflank Postgres addon (linked over the internal private network for free, fast intra-cluster traffic)
+- ✅ Migrated S3 to a new AWS account in `us-east-1` with a least-privilege IAM user and prefix-scoped public-read bucket policy
 - ✅ Deployed to production (Vercel + Northflank)
 - ✅ Fixed all null-safety issues in forms and comments
 - ✅ Replaced external placeholder images with inline SVG avatars
